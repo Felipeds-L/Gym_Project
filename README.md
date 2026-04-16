@@ -1,7 +1,12 @@
-# Gym_Project
-This project was started to test my habilities as a software developer. I intent build a gym software, similiar on "Hevy" to keep watching my progress
+# 🏋️ Gym_Project
 
-*********** PROJECT STRUCTURE *********
+Este projeto foi iniciado para consolidar meus conhecimentos em desenvolvimento de software. O objetivo é construir um ecossistema para gestão de treinos, inspirado no aplicativo **Hevy**, permitindo o acompanhamento detalhado do progresso físico.
+
+## 🏗️ Estrutura do Projeto
+
+A arquitetura segue os princípios da **Clean Architecture**, garantindo a separação de responsabilidades e facilitando a manutenção e escalabilidade do código.
+
+```text
 src/
 ├── @types/             # Definições de tipos globais ou extensões do Express
 ├── config/             # Configurações de variáveis de ambiente e bibliotecas
