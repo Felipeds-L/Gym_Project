@@ -1,13 +1,139 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// 1. GERENCIAMENTO DE USUÁRIOS E PERFIL
+// ==========================================
+
+model User {
+  id         Int        @id @default(autoincrement())
+  username   String     @unique
+  email      String     @unique
+  password   String
+  birthDate  DateTime?  @map("birth_date")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  bodyInfos       BodyInfo[]
+  routines        Routine[]
+  loggedWorkouts  LoggedWorkout[]
+
+  @@map("users")
+}
+
+model BodyInfo {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  weight    Float
+  height    Int?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("body_infos")
+}
+
+// ==========================================
+// 2. CATÁLOGO DE EXERCÍCIOS
+// ==========================================
+
+model Exercise {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  muscleGroup String   @map("muscle_group") // Ex: 'Peito', 'Costas'
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  routineExercises RoutineExercise[]
+  loggedExercises  LoggedExercise[]
+
+  @@map("exercises")
+}
+
+// ==========================================
+// 3. ROTINAS / FICHAS DE TREINO (Modelos)
+// ==========================================
+
+model Routine {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  title       String   // Ex: 'Treino A - Hipertrofia'
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineExercises RoutineExercise[]
+  loggedWorkouts   LoggedWorkout[]
+
+  @@map("routines")
+}
+
+model RoutineExercise {
+  id         Int  @id @default(autoincrement())
+  routineId  Int  @map("routine_id")
+  exerciseId Int  @map("exercise_id")
+  orderIndex Int  @map("order_index") // Ordem do exercício (1º, 2º...)
+  targetSets Int? @map("target_sets")  // Qtd de séries estimadas
+
+  routine  Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@map("routine_exercises")
+}
+
+// ==========================================
+// 4. HISTÓRICO DE TREINOS REALIZADOS (Execução)
+// ==========================================
+
+model LoggedWorkout {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @map("user_id")
+  routineId       Int?      @map("routine_id") // Opcional se for treino avulso
+  title           String    // Ex: 'Treino A feito na Segunda'
+  startTime       DateTime  @map("start_time")
+  endTime         DateTime? @map("end_time")
+  durationMinutes Int?      @map("duration_minutes")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine         Routine?         @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  loggedExercises LoggedExercise[]
+
+  @@map("logged_workouts")
+}
+
+model LoggedExercise {
+  id              Int @id @default(autoincrement())
+  loggedWorkoutId Int @map("logged_workout_id")
+  exerciseId      Int @map("exercise_id")
+  orderIndex      Int @map("order_index")
+
+  loggedWorkout LoggedWorkout @relation(fields: [loggedWorkoutId], references: [id], onDelete: Cascade)
+  exercise      Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  loggedSets    LoggedSet[]
+
+  @@map("logged_exercises")
+}
+
+model LoggedSet {
+  id               Int     @id @default(autoincrement())
+  loggedExerciseId Int     @map("logged_exercise_id")
+  setNumber        Int     @map("set_number") // 1, 2, 3...
+  weight           Float   // Carga usada
+  reps             Int     // Repetições feitas
+  isCompleted      Boolean @default(true) @map("is_completed")
+  setType          String  @default("normal") @map("set_type") // 'normal', 'warmup', 'drop'
+
+  loggedExercise LoggedExercise @relation(fields: [loggedExerciseId], references: [id], onDelete: Cascade)
+
+  @@map("logged_sets")
 }
