@@ -5,7 +5,7 @@ export default class User {
         public email: string,
         public password: string,
         public username: string,
-        public birthDate: Date,
+        public birthDate: string | null,
         public createdAt: Date,
         public updatedAt: Date
     ) {}
