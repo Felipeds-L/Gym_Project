@@ -6,10 +6,10 @@ interface createUserDTO {
   email: string;
   password: string;
   username: string;
-  birthDate: Date;
+  birthDate: string | null;
 }
 
-export class createUserUseCase {
+export class CreateUserUseCase {
     constructor(private userRepository: IUserRepository) {}
 
     async execute(data: createUserDTO): Promise<User> {
